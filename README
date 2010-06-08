@@ -38,3 +38,101 @@ I've applied an Apache 2.0 License to this code for now. This is subject to chan
 I have currently included a few modified source files that are released under LGPL. I
 will likely remove those after a few more revisions of the software.
 
+History of the Idea
+===================
+
+Recently, when my wife and I went on a trip to New York, we wanted our son to be 
+able to SMS us without incurring the extra high costs associated with international 
+SMS messages. I looked around for solutions to the problem and found nothing that 
+did what I was looking for. Here’s what I wanted to do:
+
+ * I wanted my son to be able to SMS me for free.
+ * I wanted to be able to know my son had SMSed me, 
+   and be able to respond to him for free.
+
+My wife and I both have Android based phones. I have a little bit of skill in trying
+to write Android applications. Since it is Java, which I’ve got a lot of experience 
+with, I have been able to write small applications that seem to work. I figured I’d be
+able to leave my wife’s Android phone at home attached to WiFi and make it into a gateway
+for SMS messages.
+
+I have found that Direct Messages do NOT currently support the new Annotation feature.
+This is a real problem. Because of this, I don’t believe I can use this feature for my
+implementation and will have to look at other ways of doing this.
+
+So I set out to design and implement something that would allow SMS messages to be
+forwarded to somewhere on the internet, and then when responded to on the internet
+would cause the gateway to send those SMS messages back to the original sender. But
+what would I use for the ‘internet’ portion of the application? I could have written
+a small TCP/IP socket server to do this, or, use something that is already on the internet
+and running 24/7. I chose Twitter as the forwarding service. So the application was
+starting to look like the following:
+
+ * Sending phone sends an SMS to gateway phone.
+ * Gateway phone recieves SMS message.
+ * Gateway uses a preconfigured Twitter account (the SMS forwarding account) 
+   to Direct Message another Twitter account (the receiving account).
+ * Recieving Twitter user sends a reply to the Direct Message
+ * Gateway detects the reply to the direct message.
+ * Gateway forwards the reply text as an SMS to the original sending phone number.
+ * Sending phone receives the SMS from the gateway phone.
+ 
+So, there are a few problems with this that don’t seem to be easy to solve with the
+current Twitter APIs. First, the gateway must poll for DM replies. Second, the DM
+messages do not carry any information related to exactly which message is being replied
+to. This is where Twitter’s new Annotation feature (due to be released soon) may come
+in handy.
+
+Using Annotations, the original sender of the SMS message could be tagged to the Direct
+Message. I would hope that the annotation would also be passed on to the DM reply when
+the user replies to the DM, however it may be up to the twitter client to be able to handle
+the annotations in this fashion.
+
+If that is the case, it may be necessary to write a specialized twitter client that knows
+how to handle the annotations, and makes sure the annotation is copied from the original
+DM and passed to the reply DM so that the gateway knows who the message is intended for
+(knows the original SMS phone number).
+
+During the Twitter Annotation Hackfest
+======================================
+
+My first question at the hackfest was whether Twitter Annotations are carried on Direct
+Messages. The answer was a resounding No. So, I needed to rethink the initial design ideas,
+and take a step back, coming at it from another angle.
+
+So, Direct Messages wouldn’t help me. How could I do a very similar thing using
+just Twitter Status messages. Accounts can be marked so that their timelines are
+private. This is of course optional. No matter, the content of a stream is like a
+subscription. Why not just post the SMSs coming into the gateway as status updates.
+Then if we annotate each status update with information about the original SMS
+phone number, we can direct replies back to the original phone.
+
+The only drawbacks to this are that the replies will now be public unless both user
+accounts have a private timeline, and the phone number is also available if the SMS
+forwarding account has a public timeline. The latter can be solved with some encryption
+of the phone number information.
+
+What does this look like now?
+
+ * Phone sends SMS message to the gateway Android phone.
+ * Gateway Android phone updates a Twitter status for a special SMS 
+   account. Applying an annotation referring to the sender phone number 
+ * Any twitter user subscribed to that SMS account’s twitter feed will
+   be notified of the new SMS in their friend stream.
+ * Any user can reply to the status updates. As long as the reply
+   is valid, the SMS Gateway program will detect them.
+ * SMS Gateway program polls for replies until 10 minutes of
+   inactivity occurs.
+ * When a new reply is detected, the original status message is fetched
+   from Twitter, and the annotations are used to determine where the SMS
+   reply needs to be sent.
+ * SMS Message is sent to the original sender.
+
+In this way, we have established a way for SMS to get into Twitter and be responded
+to by anyone subscribed to the Gateway’s twitter account. This could allow for a ‘help desk’
+like model. But of course the original idea was to provide a way so that international
+SMS charges could be avoided for people with internet access.
+
+Of course, the application developed at the hackfest will only be useful if Twitter
+releases their annotation feature as planned, sometime later this year. 
+I’ve had a great time at the hackfest and look forward to seeing the demonstrations.
