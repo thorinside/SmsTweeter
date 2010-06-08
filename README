@@ -1,0 +1,20 @@
+SmsTweeter
+----------
+
+This application was born out of a need to circumvent the unrealistic SMS
+rates (0.75 dollars per SMS) charged by my service provider while I was on
+a trip to the US. This application allows you to turn any Android phone into
+an SMS gateway through Twitter.com.
+
+This codebase requires The jTwitter library from:
+
+http://www.winterwell.com/software/jtwitter.php
+
+I have hacked it up a little to support the new Twitter Annotations feature
+that was recently previewed at the Twitter Annotations HackFest, but I am
+considering removing that functionality, since it really is not required for
+this application to work.
+
+If you have any questions, feel free to contact me at thorinside (at) gmail.com.
+
+Enjoy!
